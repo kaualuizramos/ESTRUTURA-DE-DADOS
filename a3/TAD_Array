@@ -1,0 +1,154 @@
+#include <stdio.h>
+
+#define MAX 50
+
+// DefiniÃ§Ã£o do tipo da chave
+typedef int TIPOCHAVE;
+
+// Estrutura de um elemento da lista
+typedef struct {
+    TIPOCHAVE chave;
+    // outros campos podem ser adicionados aqui (ex.: nome, idade...)
+} ELEMENTO;
+
+// Estrutura da lista (array de ELEMENTO + contador de elementos)
+typedef struct {
+    ELEMENTO A[MAX];
+    int nroElem;
+} LISTA;
+
+// Inicializa lista vazia
+void inicializarLista(LISTA *l) {
+    l->nroElem = 0;
+}
+
+// Exibe os elementos da lista
+void exibirLista(LISTA *l) {
+    printf("Lista: ");
+    for (int i = 0; i < l->nroElem; i++) {
+        printf("%d ", l->A[i].chave);
+    }
+    printf("\n");
+}
+
+// Retorna o tamanho da lista
+int tamanhoLista(LISTA *l) {
+    return l->nroElem;
+}
+
+// Insere no fim
+int insereElementoFim(LISTA *l, ELEMENTO elem) {
+    if (l->nroElem >= MAX) return 0; // lista cheia
+    l->A[l->nroElem] = elem;
+    l->nroElem++;
+    return 1;
+}
+
+// Insere no inÃ­cio
+int insereElementoInicio(LISTA *l, ELEMENTO elem) {
+    if (l->nroElem >= MAX) return 0;
+    for (int i = l->nroElem; i > 0; i--) {
+        l->A[i] = l->A[i - 1];
+    }
+    l->A[0] = elem;
+    l->nroElem++;
+    return 1;
+}
+
+// Insere em posiÃ§Ã£o especÃ­fica
+int insereElementoPosicao(LISTA *l, ELEMENTO elem, int pos) {
+    if (l->nroElem >= MAX || pos < 0 || pos > l->nroElem) return 0;
+    for (int i = l->nroElem; i > pos; i--) {
+        l->A[i] = l->A[i - 1];
+    }
+    l->A[pos] = elem;
+    l->nroElem++;
+    return 1;
+}
+
+// Remove do inÃ­cio --- retornando o elemento
+int removeElementoInicioR(LISTA *l, ELEMENTO *elem) {
+    if (l->nroElem == 0) return 0;
+    *elem = l->A[0];
+    for (int i = 0; i < l->nroElem - 1; i++) {
+        l->A[i] = l->A[i + 1];
+    }
+    l->nroElem--;
+    return 1;
+}
+
+// Remove do inÃ­cio --- sem retornar o elemento
+int removeElementoInicio(LISTA *l) {
+    if (l->nroElem == 0) return 0;
+    for (int i = 0; i < l->nroElem - 1; i++) {
+        l->A[i] = l->A[i + 1];
+    }
+    l->nroElem--;
+    return 1;
+}
+
+// Remove do fim -- retornando o elemento removido
+int removeElementoFimR(LISTA *l, ELEMENTO *elem) {
+    if (l->nroElem == 0) return 0;
+    *elem = l->A[l->nroElem - 1];
+    l->nroElem--;
+    return 1;
+}
+
+// Remove do fim -- sem retornar o elemento removido
+int removeElementoFim(LISTA *l) {
+    if (l->nroElem == 0) return 0;
+    l->nroElem--;
+    return 1;
+}
+
+// Busca por chave (linear)
+int buscaElemento(LISTA *l, TIPOCHAVE ch) {
+    for (int i = 0; i < l->nroElem; i++) {
+        if (l->A[i].chave == ch) return i;
+    }
+    return -1;
+}
+
+// Remove elemento por chave
+int removeElementoChave(LISTA *l, TIPOCHAVE ch) {
+    int pos = buscaElemento(l, ch);
+    if (pos == -1) return 0;
+    for (int i = pos; i < l->nroElem - 1; i++) {
+        l->A[i] = l->A[i + 1];
+    }
+    l->nroElem--;
+    return 1;
+}
+
+int main() {
+    LISTA l;
+    inicializarLista(&l);
+
+    ELEMENTO e;
+
+    e.chave = 10; insereElementoFim(&l, e);
+    e.chave = 20; insereElementoFim(&l, e);
+    e.chave = 30; insereElementoFim(&l, e);
+    exibirLista(&l);
+
+    e.chave = 5; insereElementoInicio(&l, e);
+    exibirLista(&l);
+
+    e.chave = 15; insereElementoPosicao(&l, e, 2);
+    exibirLista(&l);
+
+    removeElementoInicioR(&l, &e);
+    printf("Removido do inÃ­cio: %d\n", e.chave);
+    exibirLista(&l);
+
+    removeElementoFimR(&l, &e);
+    printf("Removido do fim: %d\n", e.chave);
+    exibirLista(&l);
+
+    removeElementoChave(&l, 20);
+    printf("ApÃ³s remover chave 20: ");
+    exibirLista(&l);
+
+    return 0;
+}

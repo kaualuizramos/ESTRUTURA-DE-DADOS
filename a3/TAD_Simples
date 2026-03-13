@@ -1,0 +1,195 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Estrutura que representa um nó da lista
+typedef struct Elemento {
+    char nome[50];
+    int numero;
+    struct Elemento *proximo;
+} Elemento;
+
+// Estrutura que representa a lista ligada
+typedef struct {
+    Elemento *head;
+    Elemento *tail;
+    int qtd;
+} ListaLigada;
+
+// Função para criar um novo elemento
+Elemento* criaElemento(char *nome, int numero) {
+    Elemento *novo = (Elemento*) malloc(sizeof(Elemento));
+    if (novo) {
+        strcpy(novo->nome, nome);
+        novo->numero = numero;
+        novo->proximo = NULL;
+    }
+    return novo;
+}
+
+// Função para inicializar uma lista ligada
+void inicializaLista(ListaLigada *lista) {
+    lista->head = NULL;
+    lista->tail = NULL;
+    lista->qtd = 0;
+}
+
+// Função para verificar se a lista está vazia
+int isEmpty(ListaLigada *lista) {
+    return lista->head == NULL;
+}
+
+
+// Função para obter o elemento na posição pos da lista (1..qtd)
+Elemento* getPos(ListaLigada *lista, int pos) {
+    if (pos <= 0 || pos > lista->qtd || isEmpty(lista)) return NULL;
+    
+    Elemento *e = lista->head;
+    for (int i = 1; i < pos; i++) {
+        e = e->proximo;
+    }
+    return e;
+}
+
+// Função para inserir um elemento no final da lista
+int insereFim(ListaLigada *lista, Elemento *e) {
+    if (isEmpty(lista)) {
+        lista->head = e;
+    } else {
+        lista->tail->proximo = e;
+    }
+    lista->tail = e;
+    lista->qtd++;
+    return 1;
+}
+
+// Inserir no início
+int insereInicio(ListaLigada *lista, Elemento *e) {
+    if (isEmpty(lista)) {
+        lista->head = e;
+        lista->tail = e;
+    } else {
+        e->proximo = lista->head;
+        lista->head = e;
+    }
+    lista->qtd++;
+    return 1;
+}
+
+// Inserir em posição específica (1 = início; >qtd = fim)
+int inserePos(ListaLigada *lista, Elemento *e, int pos) {
+    if (pos <= 1) {
+        return insereInicio(lista, e);
+    } else if (pos > lista->qtd) {
+        return insereFim(lista, e); // insere no fim
+    } else {
+        Elemento *anterior = getPos(lista, pos - 1);
+        if (anterior == NULL) return 0; // posição inválida (defensivo)
+        e->proximo = anterior->proximo;
+        anterior->proximo = e;
+        lista->qtd++;
+        return 1;
+    }
+}
+
+// Função para remover um elemento do início da lista
+Elemento* removeInicio(ListaLigada *lista) {
+    if (isEmpty(lista)) return NULL;
+    
+    Elemento *removido = lista->head;
+    lista->head = removido->proximo;
+    if (lista->head == NULL) {
+        lista->tail = NULL;
+    }
+    removido->proximo = NULL;
+    lista->qtd--;
+    return removido;
+}
+
+// Remover do fim
+Elemento* removeFim(ListaLigada *lista) {
+    if (isEmpty(lista)) return NULL;
+
+    Elemento *removido = lista->tail;
+
+    if (lista->head == lista->tail) { // apenas 1 elemento
+        lista->head = NULL;
+        lista->tail = NULL;
+    } else {
+        Elemento *anterior = lista->head;
+        while (anterior->proximo != lista->tail) {
+            anterior = anterior->proximo;
+        }
+        anterior->proximo = NULL;
+        lista->tail = anterior;
+    }
+
+    lista->qtd--;
+    return removido;
+}
+
+// Remover de posição específica (1 = início; qtd = fim)
+Elemento* removePos(ListaLigada *lista, int pos) {
+    if (isEmpty(lista) || pos <= 0 || pos > lista->qtd) return NULL;
+
+    if (pos == 1) {
+        return removeInicio(lista); // remove do início
+    } else if (pos == lista->qtd) {
+        return removeFim(lista);      // remove do fim
+    } else {
+        Elemento *anterior = getPos(lista, pos - 1);
+        if (anterior == NULL || anterior->proximo == NULL) return NULL; // defensivo
+        Elemento *removido = anterior->proximo;
+        anterior->proximo = removido->proximo;
+        removido->proximo = NULL;
+        lista->qtd--;
+        return removido;
+    }
+}
+
+
+// Função para obter o tamanho da lista
+int sizeOf(ListaLigada *lista) {
+    return lista->qtd;
+}
+
+// Função para imprimir a lista
+void imprimeListaLigada(ListaLigada *lista) {
+    printf("Elementos da lista:\n");
+    printf("--------------------------------------------\n");
+    if (isEmpty(lista)) {
+        printf("A lista está vazia.\n");
+    } else {
+        Elemento *e = lista->head;
+        while (e != NULL) {
+            printf("%s | %d --> ", e->nome, e->numero);
+            e = e->proximo;
+        }
+        printf("None\n");
+    }
+    printf("--------------------------------------------\n");
+}
+
+int main() {
+    ListaLigada lista;
+    inicializaLista(&lista);
+
+    imprimeListaLigada(&lista);
+
+    Elemento *e1 = criaElemento("A", 1);
+    Elemento *e2 = criaElemento("B", 2);
+
+    insereFim(&lista, e1);
+    insereFim(&lista, e2);
+
+    imprimeListaLigada(&lista);
+    
+    Elemento *removido = removeInicio(&lista);
+    if (removido) {
+        free(removido);
+    }
+    
+    imprimeListaLigada(&lista);
+    
+    return 0;
+}
