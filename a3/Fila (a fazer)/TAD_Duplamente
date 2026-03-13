@@ -1,0 +1,207 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Estrutura de nó da lista
+typedef struct No {
+    int valor;
+    struct No *anterior;
+    struct No *proximo;
+} No;
+
+// Estrutura da lista com sentinelas
+typedef struct {
+    No *cabeca;   // sentinela inicial
+    No *cauda;    // sentinela final
+    int tamanho;  // número de elementos
+} ListaDupla;
+
+
+// -----------------------------
+// Criar lista
+// -----------------------------
+ListaDupla* criarLista() {
+
+    ListaDupla *lista = (ListaDupla*) malloc(sizeof(ListaDupla));
+
+    // criar sentinelas
+    No *sentinelaCabeca = (No*) malloc(sizeof(No));
+    No *sentinelaCauda  = (No*) malloc(sizeof(No));
+
+    // valores não importam muito
+    sentinelaCabeca->valor = 0;
+    sentinelaCauda->valor  = 0;
+
+    // ligar sentinelas
+    sentinelaCabeca->proximo = sentinelaCauda;
+    sentinelaCabeca->anterior = NULL;
+
+    sentinelaCauda->anterior = sentinelaCabeca;
+    sentinelaCauda->proximo = NULL;
+
+    // ajustar estrutura da lista
+    lista->cabeca = sentinelaCabeca;
+    lista->cauda = sentinelaCauda;
+    lista->tamanho = 0;
+
+    return lista;
+}
+
+
+// -----------------------------
+// Inserir no início
+// -----------------------------
+void inserirNoInicio(ListaDupla *lista, int valor) {
+
+    No *novoNo = (No*) malloc(sizeof(No));
+    novoNo->valor = valor;
+
+    novoNo->proximo = lista->cabeca->proximo;
+    novoNo->anterior = lista->cabeca;
+
+    lista->cabeca->proximo->anterior = novoNo;
+    lista->cabeca->proximo = novoNo;
+
+    lista->tamanho++;
+}
+
+
+// -----------------------------
+// Inserir no final
+// -----------------------------
+void inserirNoFinal(ListaDupla *lista, int valor) {
+
+    No *novoNo = (No*) malloc(sizeof(No));
+    novoNo->valor = valor;
+
+    novoNo->anterior = lista->cauda->anterior;
+    novoNo->proximo = lista->cauda;
+
+    lista->cauda->anterior->proximo = novoNo;
+    lista->cauda->anterior = novoNo;
+
+    lista->tamanho++;
+}
+
+
+// -----------------------------
+// Remover nó
+// -----------------------------
+void removerNo(ListaDupla *lista, No *noParaRemover) {
+
+    if (noParaRemover == lista->cabeca || noParaRemover == lista->cauda) {
+        printf("Tentativa de remover sentinela!\n");
+        return;
+    }
+
+    noParaRemover->anterior->proximo = noParaRemover->proximo;
+    noParaRemover->proximo->anterior = noParaRemover->anterior;
+
+    free(noParaRemover);
+
+    lista->tamanho--;
+}
+
+
+// -----------------------------
+// Buscar elemento
+// -----------------------------
+No* encontrarNo(ListaDupla *lista, int valor) {
+
+    No *atual = lista->cabeca->proximo;
+
+    while (atual != lista->cauda) {
+
+        if (atual->valor == valor) {
+            return atual;
+        }
+
+        atual = atual->proximo;
+    }
+
+    return NULL;
+}
+
+
+// -----------------------------
+// Imprimir lista
+// -----------------------------
+void imprimirLista(ListaDupla *lista) {
+
+    No *atual = lista->cabeca->proximo;
+
+    while (atual != lista->cauda) {
+        printf("%d ", atual->valor);
+        atual = atual->proximo;
+    }
+
+    printf("\n");
+}
+
+
+// -----------------------------
+// Imprimir tamanho
+// -----------------------------
+void imprimirTamanho(ListaDupla *lista) {
+    printf("Tamanho da lista: %d\n", lista->tamanho);
+}
+
+
+// -----------------------------
+// Liberar memória
+// -----------------------------
+void liberarLista(ListaDupla *lista) {
+
+    No *atual = lista->cabeca;
+
+    while (atual != NULL) {
+
+        No *aux = atual;
+        atual = atual->proximo;
+
+        free(aux);
+    }
+
+    free(lista);
+}
+
+
+// -----------------------------
+// Main (teste)
+// -----------------------------
+int main() {
+
+    ListaDupla *lista = criarLista();
+
+    inserirNoFinal(lista, 10);
+    inserirNoFinal(lista, 20);
+    inserirNoFinal(lista, 30);
+
+    printf("Lista após inserções no final: ");
+    imprimirLista(lista);
+    imprimirTamanho(lista);
+
+    inserirNoInicio(lista, 5);
+    inserirNoInicio(lista, 1);
+
+    printf("Lista após inserções no início: ");
+    imprimirLista(lista);
+    imprimirTamanho(lista);
+
+    No *encontrado = encontrarNo(lista, 20);
+
+    if (encontrado) {
+
+        removerNo(lista, encontrado);
+
+        printf("Lista após remover o valor 20: ");
+        imprimirLista(lista);
+        imprimirTamanho(lista);
+
+    } else {
+        printf("Elemento 20 não encontrado!\n");
+    }
+
+    liberarLista(lista);
+
+    return 0;
+}
